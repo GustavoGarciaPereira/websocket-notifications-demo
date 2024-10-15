@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notifications com WebSocket</title>
+    <style>
+        /* Estilo geral */
+        body {
+            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Caixa de notificações */
+        #notifications {
+            width: 100%;
+            max-width: 400px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        /* Cada notificação */
+        .notification {
+            background-color: #e0f7fa;
+            border-left: 5px solid #00838f;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .notification p {
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        /* Botão de fechar */
+        .close-btn {
+            background-color: transparent;
+            border: none;
+            color: #00838f;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #005662;
+        }
+
+        /* Animação suave para entrada */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Animação de saída */
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+        }
+
+        /* Estilizando a barra de rolagem */
+        #notifications::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #notifications::-webkit-scrollbar-thumb {
+            background-color: #b0bec5;
+            border-radius: 4px;
+        }
+
+        #notifications::-webkit-scrollbar-track {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Notificações em Tempo Real</h1>
+        <div id="notifications"></div>
+    </div>
+
+    <script>
+        const notificationsDiv = document.getElementById('notifications');
+        const ws = new WebSocket("ws://localhost:8000/ws");
+
+        ws.onmessage = function (event) {
+            const notification = document.createElement('div');
+            notification.classList.add('notification');
+
+            const message = document.createElement('p');
+            message.textContent = `🔔 ${event.data}`;
+
+            const closeButton = document.createElement('button');
+            closeButton.classList.add('close-btn');
+            closeButton.innerHTML = '&times;';
+            
+            // Fechar notificação ao clicar no botão
+            closeButton.onclick = () => {
+                notification.style.animation = 'fadeOut 0.5s ease-in-out';
+                setTimeout(() => notification.remove(), 500);
+            };
+
+            notification.appendChild(message);
+            notification.appendChild(closeButton);
+            notificationsDiv.appendChild(notification);
+
+            // Rolar automaticamente para a última notificação
+            notificationsDiv.scrollTop = notificationsDiv.scrollHeight;
+        };
+
+        ws.onopen = function () {
+            console.log("Conectado ao WebSocket");
+        };
+
+        ws.onclose = function () {
+            console.log("Desconectado do WebSocket");
+        };
+    </script>
+</body>
+</html>
+
+
